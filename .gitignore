@@ -1,0 +1,17 @@
+# The match data is gated: never commit it, or anything rebuilt from it.
+data/
+output/
+cache/
+*.csv
+*.npz
+*.npy
+*.mp4
+*.xml
+*.txt
+!requirements.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
