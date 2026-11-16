@@ -1,3 +1,10 @@
-# Pinned so the organisers rebuild the same file. Python 3.11+ (built and checked on 3.13).
-numpy==2.5.4
-# Optional, only for --whistles: ffmpeg on PATH (system install, not a pip package).
+# Everything the evaluation needs. Deliberately two lines.
+#
+# The scorer is dependency-light on purpose: no sklearn, no torch, nothing that pins a Python
+# version. It runs under 3.8 and 3.11 alike and produces identical output, so "it scored
+# differently on my machine" is not a conversation anyone has to have.
+#
+# Optional tooling -- the ATD loader and anything that opens the video -- lives in
+# requirements-starter.txt.
+numpy
+pandas

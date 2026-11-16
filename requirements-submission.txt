@@ -1,0 +1,38 @@
+# Every package needed to regenerate the submission (src/make_submission.py), retrain the
+# models (src/training/) and run the tests, pinned to the exact versions that produced the
+# submitted file, with their dependencies. Built with Python 3.13.16 (64-bit) on Windows 11.
+# The organisers' requirements.txt (numpy, pandas) is a subset of this file.
+#
+#     python -m pip install -r requirements-submission.txt
+#
+# torch comes from the PyTorch index as the CUDA 12.4 build; it also runs without a GPU (inference
+# then uses the CPU). On a platform without that build (macOS), use torch==2.6.0 from PyPI.
+--extra-index-url https://download.pytorch.org/whl/cu124
+
+# -- the submission ------------------------------------------------------------------------------
+numpy==2.5.4
+pandas==3.1.0                # the organisers' scorer and homography loader
+torch==2.6.0+cu124           # the temporal segment model (src/models/set_temporal.pt)
+imageio-ffmpeg==0.7.0        # bundled ffmpeg: decodes the match sound for the referee's whistles
+
+# -- their dependencies --------------------------------------------------------------------------
+python-dateutil==3.0.0
+six==1.17.0
+tzdata==2026.5
+filelock==4.2.4
+fsspec==2026.9.0
+jinja2==3.1.6
+markupsafe==3.0.4
+mpmath==1.3.0
+networkx==3.7
+setuptools==84.0.0
+sympy==1.13.1
+typing-extensions==4.16.0
+
+# -- the tests (synthetic data only) -------------------------------------------------------------
+pytest==9.0.3
+colorama==0.4.6; sys_platform == "win32"
+iniconfig==2.3.0
+packaging==26.3
+pluggy==1.6.0
+pygments==2.20.0

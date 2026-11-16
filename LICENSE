@@ -1,6 +1,19 @@
+SCOPE OF THIS LICENCE
+---------------------
+
+The MIT Licence below covers the contents of this repository only: the source code, the
+documentation, and the public 5-minute ground truth in evaluation/gt/.
+
+It does NOT cover the match data — the videos, the tracking data, the Smart Tagging and the
+homography. Those assets are separately licensed for this competition only, under the terms you
+accept at enrolment, and nothing in the licence below grants any right to use or redistribute
+them. See DATA.md and RULES.md.
+
+---
+
 MIT License
 
-Copyright (c) 2026 Khanh Dao
+Copyright (c) 2026-2027 Metrica Sports
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
