@@ -19,7 +19,8 @@ Submission file: `phohanoi.csv`
   **0.648**, macroF1 **0.920**, alive/dead F1 0.980. The organisers' `smooth50` baseline scores 0.621 / 0.326 on the
   same window.
   
-- **For the strict leave-one-match-out evaluation across all 10 external Metrica/IDSSE matches**, the current frozen production pipeline scored: spellF1 **0.64341**, macro F1 **0.91702**
+- **Strict leave-one-match-out evaluation across all 10 external Metrica/IDSSE matches:** the
+  frozen production pipeline scores spellF1 **0.643**, macroF1 **0.917**.
   
 ---
 
@@ -61,13 +62,14 @@ tactical + broadcast tracking, broadcast homography, Smart Tagging, tactical vid
   ball. 
 - **Player-team cleaning.** Tracking sometimes swaps player identities, so we find stretches where
 a track follows a player from the other team and move them to a free slot on the correct team.
-- **Goalkeeper repair.** Keeper slots that jump into the opposite penalty box are blanked, assign the correct coordinate back to the correct slot.
-- **Keeper hold, ball misising.** If a ball gap of more than 1 s starts within 2 m of a goalkeeper, the ball
+- **Goalkeeper repair.** Keeper slots that jump into the opposite penalty box are blanked, and
+  the correct coordinates are assigned back to the correct slot.
+- **Keeper hold (ball missing).** If a ball gap of more than 1 s starts within 2 m of a goalkeeper, the ball
   follows that keeper until it is tracked again. These holds are recorded for Stage 4.
 - **Gap filling.** Player and ball gaps of up to 15 s are filled by linear interpolation. Longer
   ball gaps get dead reckoning (constant velocity), and the rest stays empty.
 
-**Stage 2: Base labels** (`src/possession/learned_timing_pipeline.py`). Refer 4. External data for data used
+**Stage 2: Base labels** (`src/possession/learned_timing_pipeline.py`). See §4 for the data used.
 
 - **Hard dead ball.** If the last observed ball position is outside the pitch lines, the frame is
   `D`. No later stage can override this.
@@ -88,7 +90,7 @@ a track follows a player from the other team and move them to a free slot on the
   ownership evidence. `D` interval edges move up to ±2 s on the smoothed P(dead) and always keep
   their hard-dead frames. Neither step changes the number or order of spells.
 
-**Stage 3: Segment decoding** (`set_temporal.py`, `segmental_decoder.py`, `set_segment_pipeline.py`). Refer 4. External data for data used
+**Stage 3: Segment decoding** (`set_temporal.py`, `segmental_decoder.py`, `set_segment_pipeline.py`). See §4 for the data used.
 
 - **Set-temporal network** (64k parameters, PyTorch, runs at 5 Hz):
   - a per-player encoder over 8 features (position, speed, offset to ball, team flag), with
@@ -131,7 +133,7 @@ half in this order:
    model: a steady two-tone chord with a low tone of 3.6–4.0 kHz and a tone ratio of 1.09–1.13,
    purity and loudness thresholds, and a 12 s cool-down. If the ball was moving (≥ 2 m/s) in the
    second before a whistle, the whistle is treated as a foul and play is `D` until the predicted
-   run ends. Refer 4. External data for data used
+   run ends. See §4 for the data used.
 2. **Short stoppage fill.** A `D` run shorter than 3.2 s that follows live play takes the
    preceding team's label.
 3. **Set-piece tags.** Smart Tagging corner, goal kick, free kick and throw-in tags force a `D`
@@ -160,7 +162,7 @@ Frames outside the two halves (as defined in the organisers' `games.py`) are wri
 
 **Tried and dropped, or not used**
 
-- **Dropped decoders and settings (after validate on Metrica and IDSSE):**
+- **Dropped decoders and settings (after validation on Metrica and IDSSE):**
   - Plain-threshold restart decoder: replaced by the constrained decoder.
   - Boundary-only refinement of the set-temporal model: the semi-Markov (`segmental`) mode was
     chosen instead.
@@ -311,5 +313,5 @@ python evaluation/validate_submission.py evaluation/results/phohanoi.csv
   python src/training/player_cleaning/role_scales_thresholds.py
   ```
 
-- **Runtime.** About 7-10 minutes (depend on machine capability) end to end on the reference machine, with the whistle cache
+- **Runtime.** About 7–10 minutes end to end, depending on the machine, with the whistle cache
   already built.
