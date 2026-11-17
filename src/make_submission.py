@@ -16,7 +16,7 @@ pieces.
 Reference output (GPU: torch 2.6.0+cu124 on an RTX 4070 Ti SUPER, the pinned
 requirements-submission.txt, Python 3.13.16, Windows 11), reproduced byte-for-byte on two runs:
 
-    evaluation/results/mtah_2027_possession.csv   199319 rows, 233 possessions of mean 13.8 s
+    evaluation/results/phohanoi.csv   199319 rows, 233 possessions of mean 13.8 s
     sha256 8916418653fa775a5453663132dceed3257ad03870372e6c25a47a1dc6c87b74
 """
 
@@ -35,7 +35,7 @@ from possession import final_pipeline, rule_cleanup, whistle_cleanup  # noqa: E4
 from possession.data import read_tracking, parse_atd, team_of_each_slot  # noqa: E402
 from possession.labels import graded_mask, possession_summary, write_submission  # noqa: E402
 
-TEAM_NAME = "mtah_2027_possession"
+TEAM_NAME = "phohanoi"
 
 
 def load_tactical(data_dir):
