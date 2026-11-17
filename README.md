@@ -1,3 +1,89 @@
+# phohanoi: Ball Possession from Automatic Tracking
+
+Team **phohanoi**'s submission to More than a Hack 2027, Phase 1. For every frame of the match the
+code outputs `H` / `A` / `D` (or `X` outside the two halves). Every label is produced by code, and
+no challenge-match labels were used for training or model selection.
+
+- **Technical document:** [phohanoi.md](phohanoi.md)
+- **External data details:** [EXTERNAL_DATA.md](EXTERNAL_DATA.md)
+- **Submission file:** `evaluation/results/phohanoi.csv` (199,319 rows, 233 possessions, mean 13.8 s)
+
+## Results
+
+| Evaluation | spellF1 | macroF1 |
+|---|---|---|
+| Public 5-minute window (pipeline check only) | **0.648** | **0.920** |
+| Organisers' `smooth50` baseline, same window | 0.326 | 0.621 |
+| External datasets (Metrica and IDSSE) | **0.643** | **0.917** |
+
+## Reproduction
+
+```bash
+python -m pip install -r requirements-submission.txt   # pinned; Python 3.13, torch 2.6.0+cu124
+# unpack the organisers' data bundle into ./data  (or set MTAH_DATA_DIR)
+python src/make_submission.py                          # writes evaluation/results/phohanoi.csv
+python evaluation/validate_submission.py evaluation/results/phohanoi.csv
+```
+
+- **No external data is needed for inference.** It uses only the frozen models in `src/models/`
+  (`restart_state.json`, `spell_candidate.json`, `set_temporal.pt`, `team_role_scales.json`).
+- **Whistle audio cache.** The first run decodes the match audio once into `cache/whistle/`
+  (git-ignored), using ffmpeg from PATH or the pinned `imageio-ffmpeg`. Later runs reuse it.
+- **Expected output.** SHA-256
+  `8916418653fa775a5453663132dceed3257ad03870372e6c25a47a1dc6c87b74`, reproduced byte for byte
+  across runs. The hash does not depend on `--name` (default `phohanoi`).
+- **Reference environment.** Windows 11, Python 3.13.16, torch 2.6.0+cu124, RTX 4070 Ti SUPER.
+  torch also runs on CPU. On macOS, use `torch==2.6.0` from PyPI.
+- **Runtime.** About 7–10 minutes end to end once the whistle cache exists, depending on the
+  machine.
+
+### Retraining the models (optional)
+
+```bash
+python src/training/fetch_metrica.py        # -> external/metrica/
+python src/training/fetch_idsse.py          # -> external/idsse/
+python src/training/possession_models/train_restart_state.py --include-idsse
+python src/training/possession_models/train_spell_candidate.py
+python src/training/possession_models/train_set_temporal.py --include-idsse
+python src/training/player_cleaning/role_scales_thresholds.py
+```
+
+## External data
+
+All learned components were trained and selected on **10 public external matches only**. The raw
+files (over 3 GB) are downloaded by the fetch scripts into `external/`, which is not committed.
+
+| Dataset | Source | Amount | Used as |
+|---|---|---|---|
+| Metrica Sports sample data, Games 1–3 | [metrica-sports/sample-data](https://github.com/metrica-sports/sample-data) | 3 matches | Provider event data converted by code into frame-level `H`/`A`/`D` |
+| IDSSE (DFL tracking), CC BY 4.0 | [pysport/idsse-data](https://huggingface.co/datasets/pysport/idsse-data) | 7 matches | Frame-level live/dead and possession |
+| Croatia–Czechia, EURO 2020, tactical camera | [YouTube](https://www.youtube.com/watch?v=KgQquW68E-Q&t=433s) | 1 match (audio) | Designing the rule-based referee-whistle detector |
+| Man City–Chelsea, 2021 UCL final, tactical camera | [YouTube](https://www.youtube.com/watch?v=JA0p0Bg9N1w) | 1 match (audio) | Same as above |
+
+The models are trained on synthetically degraded copies of these matches (hidden ball, messy
+tracklets, identity swaps) to resemble the challenge tracking. The organisers' 5-minute ground
+truth was used only to check frame alignment and file format.
+
+## Pipeline at a glance
+
+1. **Data cleaning.** Aligns the two cameras, fixes team identity swaps and goalkeeper slots,
+   makes the ball follow a goalkeeper who is holding it, and fills tracking gaps.
+2. **Base labels.** Out-of-pitch frames are always dead. A small network estimates dead ball, the
+   nearest team gives possession, and a learned filter decides whether to keep or merge each
+   short spell.
+3. **Segment decoding.** A slot-invariant temporal network plus a semi-Markov (segment-level)
+   Viterbi decoder, matching what spellF1 rewards.
+4. **Corroboration.** Broadcast camera cuts, a check that restores live play when a team still
+   clearly has the ball, and goalkeeper possession.
+5. **Rule clean-up.** Referee whistles from the match audio, filling short stoppages, Smart
+   Tagging set-piece windows, the corner taker's team, and merging spells shorter than 1.8 s.
+
+Code lives in `src/`: `clean_data/`, `possession/`, `whistle/`, `training/`, and the entry point
+`make_submission.py`.
+
+
+---
+
 # More than a Hack 2027 — Phase 1: Ball Possession
 
 **Organised by [Metrica Sports](https://metrica-sports.com), [FC Barcelona](https://www.fcbarcelona.com)
